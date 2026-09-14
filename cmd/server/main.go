@@ -56,6 +56,11 @@ func main() {
 		"/tickets/",
 		middleware.AuthMiddleware(http.HandlerFunc(ticketHandler.Tickets)),
 	)
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Welcome to Ticket System API"))
+	})
+
 	//log.Println("Server running on port 8080....")
 	//err = http.ListenAndServe(":8080", mux)
 	//if err != nil {
