@@ -4,6 +4,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"ticket-system/internal/middleware"
+	"ticket-system/internal/repository"
+	"ticket-system/internal/service"
 
 	"github.com/joho/godotenv"
 
@@ -30,10 +33,29 @@ func main() {
 
 	log.Println("Database connected successfully")
 
+	userRepository := repository.NewUserRepository(db)
+	authService := service.NewAuthService(userRepository)
+	authHandler := handler.NewAuthHandler(authService)
+
+	ticketRepository := repository.NewTicketRepository(db)
+	ticketService := service.NewTicketService(ticketRepository)
+	ticketHandler := handler.NewTicketHandler(ticketService)
+
 	mux := http.NewServeMux() //create router
 
 	mux.HandleFunc("/health", handler.Health)
+	mux.HandleFunc("/auth/register", authHandler.Register)
+	mux.HandleFunc("/auth/login", authHandler.Login)
 
+	mux.Handle(
+		"/tickets",
+		middleware.AuthMiddleware(http.HandlerFunc(ticketHandler.Tickets)),
+	)
+
+	mux.Handle(
+		"/tickets/",
+		middleware.AuthMiddleware(http.HandlerFunc(ticketHandler.Tickets)),
+	)
 	log.Println("Server running on port 8080....")
 
 	err = http.ListenAndServe(":8080", mux)
