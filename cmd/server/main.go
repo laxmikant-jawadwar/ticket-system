@@ -56,10 +56,20 @@ func main() {
 		"/tickets/",
 		middleware.AuthMiddleware(http.HandlerFunc(ticketHandler.Tickets)),
 	)
-	log.Println("Server running on port 8080....")
+	//log.Println("Server running on port 8080....")
+	//err = http.ListenAndServe(":8080", mux)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
-	err = http.ListenAndServe(":8080", mux)
-	if err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Println("Server running on port " + port)
+
+	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatal(err)
 	}
 }
